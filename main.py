@@ -1,9 +1,13 @@
+#!/usr/bin/python
+import getopt
+import sys
 import docx
 import json
 import re
 import unidecode
 import csv
-from datetime import date
+
+from datetime import datetime
 from langdetect import detect
 from langdetect.lang_detect_exception import LangDetectException
 
@@ -30,12 +34,13 @@ def load_roles():
             non_role.append(p)
 
 
-def load_file(file_name: str):
+def process_file(file_name: str, output: str):
     document = docx.Document(docx=file_name)
-    today = date.today()
+    today = datetime.now()
     d1 = today.strftime("%Y%m%d%H%M%S")
+    output_to = f'output/{output}_{d1}.csv'
 
-    with open(f'output/dataset_{d1}.csv', 'w', newline='') as file:
+    with open(output_to, 'w', newline='') as file:
         writer = csv.writer(file)
         writer.writerow(["Text", "Role"])
 
@@ -48,7 +53,9 @@ def load_file(file_name: str):
                 if text != '':
                     writer.writerow([role, text])
                     print(f'{role} : {text}')
-    print(f'The CSV file has been created at output/dataset_{d1}.csv')
+
+    print('\n#############################################')
+    print(f'The CSV file has been created at {output_to}')
 
 
 def process_line(line: str):
@@ -138,6 +145,31 @@ def remove_spanish(text: str):
     return None
 
 
+def process_params(argv):
+    input_file = ''
+    output_file = ''
+    try:
+        opts, args = getopt.getopt(argv, "hi:o:", ["ifile=", "ofile="])
+        if len(opts) == 0:
+            print('main.py -i <inputfile> -o <outputfile>')
+            sys.exit(2)
+    except getopt.GetoptError:
+        print('main.py -i <inputfile> -o <outputfile>')
+        sys.exit(2)
+
+    for opt, arg in opts:
+        if opt == '-h':
+            print('test.py -i <inputfile> -o <outputfile>')
+            sys.exit()
+        elif opt in ("-i", "--ifile"):
+            input_file = arg
+        elif opt in ("-o", "--ofile"):
+            output_file = arg
+
+    return input_file, output_file
+
+
 if __name__ == '__main__':
+    input_file, output_file = process_params(sys.argv[1:])
     load_roles()
-    load_file('data/TNS-G-C2L1P-Apr12-C-Issac_q2_01-06.docx')
+    process_file(input_file, output_file) #'data/TNS-G-C2L1P-Apr12-C-Issac_q2_01-06.docx')
