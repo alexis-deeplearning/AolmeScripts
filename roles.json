@@ -2,6 +2,8 @@
     "Student": [
         "Marissa",
         "Benny",
+        "Brandon",
+        "Matias",
         "Suzette"],
     "CoFacilitator": [
         "Judith"],
@@ -11,6 +13,9 @@
         "Carlos",
         "Man",
         "Woman",
+        "Luis",
+        "Marios",
+        "Allan",
         "External Person in [a-zA-Z_]"],
     "NonRole": [
         "Completed by",

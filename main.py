@@ -1,7 +1,11 @@
-from tqdm import tqdm
 import docx
 import json
 import re
+import unidecode
+import csv
+from datetime import date
+from langdetect import detect
+from langdetect.lang_detect_exception import LangDetectException
 
 students = []
 facilitators = []
@@ -28,12 +32,23 @@ def load_roles():
 
 def load_file(file_name: str):
     document = docx.Document(docx=file_name)
-    for line in document.paragraphs:
+    today = date.today()
+    d1 = today.strftime("%Y%m%d%H%M%S")
 
-        role, text = process_line(line.text)
+    with open(f'output/dataset_{d1}.csv', 'w', newline='') as file:
+        writer = csv.writer(file)
+        writer.writerow(["Text", "Role"])
 
-        if role is not None and text is not None:
-            print(f'{role} : {text}')
+        for line in document.paragraphs:
+            line_text = line.text.replace('¿', '')
+            line_text = unidecode.unidecode(line_text)
+            role, text = process_line(line_text)
+
+            if role is not None and text is not None:
+                if text != '':
+                    writer.writerow([role, text])
+                    print(f'{role} : {text}')
+    print(f'The CSV file has been created at output/dataset_{d1}.csv')
 
 
 def process_line(line: str):
@@ -42,7 +57,7 @@ def process_line(line: str):
 
     if index != -1:
         first_part = line[0:index]
-        second_part = line[index + 1:]
+        second_part = line[index + 1:].lower()
 
         for pattern in non_role:
             m = re.search(pattern, first_part)
@@ -78,20 +93,49 @@ def process_line(line: str):
         if keep_searching:
             role = 'Student'
 
-        # print(f'{first_part} : {role}')
+        second_part = remove_spanish(second_part)
 
-        second_part = second_part.lower()
-        second_part = second_part.replace('(inaudible)', '')
-
-        index = second_part.find('(')
-        if index == -1:
-            return role, second_part
-
-        second_part = second_part[index + 1:]
-        second_part = second_part.replace(')', '')
+        if second_part is None:
+            return None, None
 
         return role, second_part
     return None, None
+
+
+def remove_spanish(text: str):
+    processed_text = text.replace('(inaudible)', '').replace('...', '')
+    processed_text = re.sub("([\(\[]).*?([\)\]])", "", processed_text)
+
+    index = processed_text.find('(')
+    if index != -1:
+        processed_text = processed_text[index + 1:]
+        processed_text = processed_text.replace(')', '')
+
+        return processed_text
+
+    index = processed_text.find('//')
+    if index != -1:
+        parts = processed_text.split('//')
+        sub_parts = []
+
+        for part in parts:
+            try:
+                part = part.strip()
+                if part != '' and detect(part) == 'en':
+                    sub_parts.append(part)
+            except:
+                return None
+
+        processed_text = ' '.join(sub_parts)
+        return processed_text
+
+    try:
+        if detect(processed_text) == 'en':
+            return processed_text
+    except LangDetectException:
+        return None
+
+    return None
 
 
 if __name__ == '__main__':
