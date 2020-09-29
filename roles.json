@@ -4,14 +4,25 @@
         "Benny",
         "Suzette"],
     "CoFacilitator": [
-        "Judith",
-        "",
-        ""],
+        "Judith"],
     "Facilitator": [
         "External Person",
         "Isaac",
         "Carlos",
         "Man",
         "Woman",
-        "External Person in #placeholder#"]
+        "External Person in [a-zA-Z_]"],
+    "NonRole": [
+        "Completed by",
+        "Video title",
+        "Date",
+        "Folder in which the video is included/stored",
+        "Students Involved",
+        "Facilitator",
+        "Activity/Topic",
+        "Languages used",
+        "Author",
+        "Transcript",
+        "[0-9]+"
+    ]
 }
