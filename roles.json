@@ -6,7 +6,8 @@
         "Matias",
         "Suzette"],
     "CoFacilitator": [
-        "Judith"],
+        "Judith",
+        "Brandon"],
     "Facilitator": [
         "External Person",
         "Isaac",
@@ -28,6 +29,7 @@
         "Languages used",
         "Author",
         "Transcript",
+        "NOTE",
         "[0-9]+"
     ]
 }

@@ -5,11 +5,11 @@ import docx
 import json
 import re
 import unidecode
-import csv
 
 from datetime import datetime
 from langdetect import detect
 from langdetect.lang_detect_exception import LangDetectException
+from pandas import DataFrame
 
 students = []
 facilitators = []
@@ -40,19 +40,30 @@ def process_file(file_name: str, output: str):
     d1 = today.strftime("%Y%m%d%H%M%S")
     output_to = f'output/{output}_{d1}.csv'
 
-    with open(output_to, 'w', newline='') as file:
-        writer = csv.writer(file)
-        writer.writerow(["Text", "Role"])
+    data_vector = []
 
-        for line in document.paragraphs:
-            line_text = line.text.replace('¿', '')
-            line_text = unidecode.unidecode(line_text)
-            role, text = process_line(line_text)
+    for line in document.paragraphs:
+        line_text = line.text.replace('¿', '')
+        line_text = unidecode.unidecode(line_text)
+        role, text = process_line(line_text)
 
-            if role is not None and text is not None:
-                if text != '':
-                    writer.writerow([role, text])
-                    print(f'{role} : {text}')
+        if role is not None and text is not None:
+            if text != '':
+                data_vector.append([role, text])
+
+    df = DataFrame(data_vector, columns=['Role', 'Text'])
+    print(df)
+
+    students_count = len(df[df['Role'] == 'Student'])
+    facilitators_count = len(df[df['Role'] == 'Facilitator'])
+    co_facilitators_count = len(df[df['Role'] == 'Co-Facilitator'].value_counts())
+    total = students_count + facilitators_count + co_facilitators_count
+
+    print(f'Students Count: {students_count} ({students_count * 100 / total:.2f}%)')
+    print(f'Facilitators Count: {facilitators_count} ({facilitators_count * 100 / total:.2f}%)')
+    print(f'CoFacilitators Count: {co_facilitators_count} ({co_facilitators_count * 100 / total:.2f}%)')
+
+    df.to_csv(output_to, index=False)
 
     print('\n#############################################')
     print(f'The CSV file has been created at {output_to}')
@@ -64,7 +75,7 @@ def process_line(line: str):
 
     if index != -1:
         first_part = line[0:index]
-        second_part = line[index + 1:].lower()
+        second_part = line[index + 1:].lower().strip()
 
         for pattern in non_role:
             m = re.search(pattern, first_part)
@@ -111,14 +122,9 @@ def process_line(line: str):
 
 def remove_spanish(text: str):
     processed_text = text.replace('(inaudible)', '').replace('...', '')
-    processed_text = re.sub("([\(\[]).*?([\)\]])", "", processed_text)
-
-    index = processed_text.find('(')
-    if index != -1:
-        processed_text = processed_text[index + 1:]
-        processed_text = processed_text.replace(')', '')
-
-        return processed_text
+    if processed_text.find("(") != -1:
+        processed_text = processed_text[processed_text.find("(")+1:processed_text.find(")")]
+    processed_text = re.sub("[\[].*?[\]]", "", processed_text)
 
     index = processed_text.find('//')
     if index != -1:
@@ -137,7 +143,7 @@ def remove_spanish(text: str):
         return processed_text
 
     try:
-        if detect(processed_text) == 'en':
+        if detect(processed_text) != 'es':
             return processed_text
     except LangDetectException:
         return None
