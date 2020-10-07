@@ -5,6 +5,7 @@ import docx
 import json
 import re
 import unidecode
+import os
 
 from datetime import datetime
 from langdetect import detect
@@ -34,29 +35,48 @@ def load_roles():
             non_role.append(p)
 
 
-def process_file(file_name: str, output: str):
-    document = docx.Document(docx=file_name)
-    today = datetime.now()
-    d1 = today.strftime("%Y%m%d%H%M%S")
-    output_to = f'output/{output}_{d1}.csv'
+def process_file(file_name: str, dir_name: str, output: str):
+    files = []
+    if dir_name is not None and dir_name != '':
+        fnames = os.listdir(dir_name)
 
-    data_vector = []
+        for fname in fnames:
+            files.append(f'{dir_name}/{fname}')
+    elif file_name is not None:
+        files.append(file_name)
+    else:
+        print('Error: It is necessary to pass input file (-i) or input directory (-d)')
+        print('main.py [-i --ifile <inputfile>] [-d --dir <inputfolder>] [-o --ofile <outputfile>]')
+        sys.exit(2)
 
-    for line in document.paragraphs:
-        line_text = line.text.replace('¿', '')
-        line_text = unidecode.unidecode(line_text)
-        role, text = process_line(line_text)
+    students_count = 0
+    facilitators_count = 0
+    co_facilitators_count = 0
 
-        if role is not None and text is not None:
-            if text != '':
-                data_vector.append([role, text])
+    for file in files:
+        document = docx.Document(docx=file)
+        today = datetime.now()
+        d1 = today.strftime("%Y%m%d%H%M%S")
+        output_to = f'output/{output}_{d1}.csv'
 
-    df = DataFrame(data_vector, columns=['Role', 'Text'])
-    print(df)
+        data_vector = []
 
-    students_count = len(df[df['Role'] == 'Student'])
-    facilitators_count = len(df[df['Role'] == 'Facilitator'])
-    co_facilitators_count = len(df[df['Role'] == 'Co-Facilitator'].value_counts())
+        for line in document.paragraphs:
+            line_text = line.text.replace('¿', '')
+            line_text = unidecode.unidecode(line_text)
+            role, text = process_line(line_text)
+
+            if role is not None and text is not None:
+                if text != '':
+                    data_vector.append([role, text])
+
+        df = DataFrame(data_vector, columns=['Role', 'Text'])
+        # print(df)
+
+        students_count += len(df[df['Role'] == 'Student'])
+        facilitators_count += len(df[df['Role'] == 'Facilitator'])
+        co_facilitators_count += len(df[df['Role'] == 'Co-Facilitator'].value_counts())
+
     total = students_count + facilitators_count + co_facilitators_count
 
     print(f'Students Count: {students_count} ({students_count * 100 / total:.2f}%)')
@@ -65,8 +85,9 @@ def process_file(file_name: str, output: str):
 
     df.to_csv(output_to, index=False)
 
-    print('\n#############################################')
-    print(f'The CSV file has been created at {output_to}')
+    output_filename = f'The CSV file has been created at {output_to}'
+    print('\n' + '#' * len(output_filename))
+    print(output_filename)
 
 
 def process_line(line: str):
@@ -154,28 +175,32 @@ def remove_spanish(text: str):
 def process_params(argv):
     input_file = ''
     output_file = ''
+    input_dir = ''
+
     try:
-        opts, args = getopt.getopt(argv, "hi:o:", ["ifile=", "ofile="])
+        opts, args = getopt.getopt(argv, "hi:d:o:", ["ifile=", "dir=", "ofile="])
         if len(opts) == 0:
-            print('main.py -i <inputfile> -o <outputfile>')
+            print('main.py [-i --ifile <inputfile>] [-d --dir <inputfolder>] [-o --ofile <outputfile>]')
             sys.exit(2)
     except getopt.GetoptError:
-        print('main.py -i <inputfile> -o <outputfile>')
+        print('main.py [-i --ifile <inputfile>] [-d --dir <inputfolder>] [-o --ofile <outputfile>]')
         sys.exit(2)
 
     for opt, arg in opts:
         if opt == '-h':
-            print('test.py -i <inputfile> -o <outputfile>')
+            print('main.py [-i --ifile <inputfile>] [-d --dir <inputfolder>] [-o --ofile <outputfile>]')
             sys.exit()
         elif opt in ("-i", "--ifile"):
             input_file = arg
+        elif opt in ("-d", "--dir"):
+            input_dir = arg
         elif opt in ("-o", "--ofile"):
             output_file = arg
 
-    return input_file, output_file
+    return input_file, input_dir, output_file
 
 
 if __name__ == '__main__':
-    input_file, output_file = process_params(sys.argv[1:])
+    input_file, input_dir, output_file = process_params(sys.argv[1:])
     load_roles()
-    process_file(input_file, output_file) #'data/TNS-G-C2L1P-Apr12-C-Issac_q2_01-06.docx')
+    process_file(input_file, input_dir, output_file)
