@@ -36,12 +36,16 @@ def load_roles():
 
 
 def process_file(file_name: str, dir_name: str, output: str):
+    today = datetime.now()
+    d1 = today.strftime("%Y%m%d%H%M%S")
+    output_to = f'output/{output}_{d1}.csv'
+
     files = []
     if dir_name is not None and dir_name != '':
-        fnames = os.listdir(dir_name)
+        file_names = os.listdir(dir_name)
 
-        for fname in fnames:
-            files.append(f'{dir_name}/{fname}')
+        for sub_file_name in file_names:
+            files.append(f'{dir_name}/{sub_file_name}')
     elif file_name is not None:
         files.append(file_name)
     else:
@@ -49,15 +53,10 @@ def process_file(file_name: str, dir_name: str, output: str):
         print('main.py [-i --ifile <inputfile>] [-d --dir <inputfolder>] [-o --ofile <outputfile>]')
         sys.exit(2)
 
-    students_count = 0
-    facilitators_count = 0
-    co_facilitators_count = 0
+    data_frame = DataFrame([], columns=['Role', 'Text'])
 
     for file in files:
         document = docx.Document(docx=file)
-        today = datetime.now()
-        d1 = today.strftime("%Y%m%d%H%M%S")
-        output_to = f'output/{output}_{d1}.csv'
 
         data_vector = []
 
@@ -70,12 +69,11 @@ def process_file(file_name: str, dir_name: str, output: str):
                 if text != '':
                     data_vector.append([role, text])
 
-        df = DataFrame(data_vector, columns=['Role', 'Text'])
-        # print(df)
+        data_frame = data_frame.append(DataFrame(data_vector, columns=['Role', 'Text']))
 
-        students_count += len(df[df['Role'] == 'Student'])
-        facilitators_count += len(df[df['Role'] == 'Facilitator'])
-        co_facilitators_count += len(df[df['Role'] == 'Co-Facilitator'].value_counts())
+    students_count = len(data_frame[data_frame['Role'] == 'Student'])
+    facilitators_count = len(data_frame[data_frame['Role'] == 'Facilitator'])
+    co_facilitators_count = len(data_frame[data_frame['Role'] == 'Co-Facilitator'])
 
     total = students_count + facilitators_count + co_facilitators_count
 
@@ -83,7 +81,7 @@ def process_file(file_name: str, dir_name: str, output: str):
     print(f'Facilitators Count: {facilitators_count} ({facilitators_count * 100 / total:.2f}%)')
     print(f'CoFacilitators Count: {co_facilitators_count} ({co_facilitators_count * 100 / total:.2f}%)')
 
-    df.to_csv(output_to, index=False)
+    data_frame.to_csv(output_to, index=False)
 
     output_filename = f'The CSV file has been created at {output_to}'
     print('\n' + '#' * len(output_filename))
