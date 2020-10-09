@@ -10,9 +10,9 @@ LABEL = data.LabelField(dtype=torch.float, batch_first=True)
 fields = [('Role', LABEL), ('Text', TEXT)]
 
 # Loading dataset
-training_data = data.TabularDataset(path='output/balanced_20201008010117.csv',
+training_data = data.TabularDataset(path='output/balanced_20201008231312.csv',
                                     format='csv',
                                     fields=fields,
                                     skip_header=True)
-
-print(vars(training_data.examples[0]))
+for i in range(0, 10):
+    print(vars(training_data.examples[i]))
