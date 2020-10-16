@@ -130,7 +130,7 @@ def train_model(input_model, epochs=10, lr=0.001):
         total = 0
 
         # Iterates on Training DataLoader
-        for x, y, l in train_dl:
+        for x, y, l in training_dl:
             x = x.long()
             y = y.long()
             y_pred = input_model(x, l)
@@ -141,7 +141,7 @@ def train_model(input_model, epochs=10, lr=0.001):
             sum_loss += loss.item() * y.shape[0]
             total += y.shape[0]
 
-        val_loss, val_acc, val_rmse = get_metrics(input_model, val_dl)
+        val_loss, val_acc, val_rmse = get_metrics(input_model, validation_dl)
 
         if i % 10 == 1:
             print(f"Epoch {i}: training loss %.3f, valid. loss %.3f, valid. accuracy %.3f, and valid. RMSE %.3f" % (
@@ -179,8 +179,8 @@ def get_metrics(input_model, valid_dl):
 
 
 vocab_size = len(words)
-train_dl = DataLoader(training_ds, batch_size=BATCH_SIZE, shuffle=True)
-val_dl = DataLoader(validation_ds, batch_size=BATCH_SIZE)
+training_dl = DataLoader(training_ds, batch_size=BATCH_SIZE, shuffle=True)
+validation_dl = DataLoader(validation_ds, batch_size=BATCH_SIZE)
 
 model_fixed = BiLstmFixedLength(vocab_size, EMBEDDED_LAYER_DIM, HIDDEN_LAYER_DIM)
 
