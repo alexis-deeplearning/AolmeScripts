@@ -9,7 +9,6 @@ from datetime import datetime
 from pandas import DataFrame
 from utilities_nlp import load_roles, process_line
 
-
 students, co_facilitators, facilitators, non_role = load_roles()
 
 
