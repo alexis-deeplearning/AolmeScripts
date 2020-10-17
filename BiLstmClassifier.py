@@ -11,9 +11,13 @@ class BiLstmFixedLength(nn.Module):
 
     def __init__(self, vocab_size, embedding_dim, hidden_dim):
         super().__init__()
+        # Word-Embedding Layer
         self.embeddings = nn.Embedding(vocab_size, embedding_dim, padding_idx=0)
+        # Bi-directional LSTM
         self.lstm = nn.LSTM(embedding_dim, hidden_dim, batch_first=True, bidirectional=True)
-        self.linear = nn.Linear(hidden_dim, 5)
+        # Linear Layer: Fully connected layer, 3 output features (roles)
+        self.linear = nn.Linear(hidden_dim, 3)
+        # Dropout 0.2
         self.dropout = nn.Dropout(0.2)
 
     def forward(self, x, l):
@@ -30,10 +34,13 @@ class BiLstmVariableLength(nn.Module):
     def __init__(self, vocab_size, embedding_dim, hidden_dim):
         super().__init__()
         self.hidden_dim = hidden_dim
-        self.dropout = nn.Dropout(0.3)
+        self.dropout = nn.Dropout(0.2)
+        # Word-Embedding Layer
         self.embeddings = nn.Embedding(vocab_size, embedding_dim, padding_idx=0)
+        # Bi-directional LSTM
         self.lstm = nn.LSTM(embedding_dim, hidden_dim, batch_first=True, bidirectional=True)
-        self.linear = nn.Linear(hidden_dim, 5)
+        # Linear Layer: Fully connected layer, 3 output features (roles)
+        self.linear = nn.Linear(hidden_dim, 3)
 
     def forward(self, x, s):
         x = self.embeddings(x)
@@ -50,11 +57,15 @@ class BiLstmGloveVector(nn.Module):
 
     def __init__(self, vocab_size, embedding_dim, hidden_dim, glove_weights):
         super().__init__()
+        # Word-Embedding Layer
         self.embeddings = nn.Embedding(vocab_size, embedding_dim, padding_idx=0)
         self.embeddings.weight.data.copy_(torch.from_numpy(glove_weights))
-        self.embeddings.weight.requires_grad = False  ## freeze embeddings
+        self.embeddings.weight.requires_grad = False
+        # Bi-directional LSTM
         self.lstm = nn.LSTM(embedding_dim, hidden_dim, batch_first=True, bidirectional=True)
-        self.linear = nn.Linear(hidden_dim, 5)
+        # Linear Layer: Fully connected layer, 3 output features (roles)
+        self.linear = nn.Linear(hidden_dim, 3)
+        # Dropout 0.2
         self.dropout = nn.Dropout(0.2)
 
     def forward(self, x, l):
