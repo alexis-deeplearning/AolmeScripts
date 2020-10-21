@@ -211,7 +211,7 @@ def load_glove_vectors():
     """Load the glove Global Vectors for Word Representation"""
     word_vectors = {}
 
-    with open("./data/glove/glove.6B.50d.txt", encoding="utf8") as f:
+    with open("glove/glove.6B.50d.txt", encoding="utf8") as f:
         for line in f:
             split = line.split()
             word_vectors[split[0]] = np.array([float(x) for x in split[1:]])

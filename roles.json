@@ -4,10 +4,18 @@
         "Benny",
         "Brandon",
         "Matias",
-        "Suzette"],
+        "Suzette",
+        "Maya",
+        "Student 1",
+        "Student 2",
+        "Student 3",
+        "Seraly"
+    ],
     "CoFacilitator": [
         "Judith",
-        "Brandon"],
+        "Brandon",
+        "Kassandra"
+    ],
     "Facilitator": [
         "External Person",
         "Isaac",
@@ -17,7 +25,11 @@
         "Luis",
         "Marios",
         "Allan",
-        "External Person in [a-zA-Z_]"],
+        "External Person in [a-zA-Z_]",
+        "Facilitator",
+        "External man",
+        "External woman"
+    ],
     "NonRole": [
         "Completed by",
         "Video title",
