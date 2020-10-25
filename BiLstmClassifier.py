@@ -4,6 +4,8 @@ from torch.nn.utils.rnn import pack_padded_sequence
 import torch
 import torch.nn as nn
 
+DROPOUT = 0.7
+
 
 class BiLstmFixedLength(nn.Module):
     def _forward_unimplemented(self, *input: Any) -> None:
@@ -18,7 +20,7 @@ class BiLstmFixedLength(nn.Module):
         # Linear Layer: Fully connected layer, 3 output features (roles)
         self.linear = nn.Linear(hidden_dim, 3)
         # Dropout 0.2
-        self.dropout = nn.Dropout(0.2)
+        self.dropout = nn.Dropout(DROPOUT)
 
     def forward(self, x, l):
         x = self.embeddings(x)
@@ -34,7 +36,7 @@ class BiLstmVariableLength(nn.Module):
     def __init__(self, vocab_size, embedding_dim, hidden_dim):
         super().__init__()
         self.hidden_dim = hidden_dim
-        self.dropout = nn.Dropout(0.2)
+        self.dropout = nn.Dropout(DROPOUT)
         # Word-Embedding Layer
         self.embeddings = nn.Embedding(vocab_size, embedding_dim, padding_idx=0)
         # Bi-directional LSTM
@@ -66,7 +68,7 @@ class BiLstmGloveVector(nn.Module):
         # Linear Layer: Fully connected layer, 3 output features (roles)
         self.linear = nn.Linear(hidden_dim, 3)
         # Dropout 0.2
-        self.dropout = nn.Dropout(0.2)
+        self.dropout = nn.Dropout(DROPOUT)
 
     def forward(self, x, l):
         x = self.embeddings(x)
